@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart PDS — Face Verification</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+  .top-bar { background: #1a237e; padding: 5px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .top-bar span { color: rgba(255,255,255,0.8); font-size: 11px; }
+  .top-bar-right { display: flex; gap: 16px; }
+  .top-bar a { color: rgba(255,255,255,0.7); font-size: 11px; text-decoration: none; }
+  .top-bar a:hover { color: #fff; }
+
+  .header { background: #fff; border-bottom: 4px solid #ff6b00; padding: 10px 30px; display: flex; align-items: center; gap: 16px; }
+  .header-logo { width: 58px; height: 58px; border-radius: 50%; background: #f5f0e8; border: 2px solid #ff6b00; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .header-text h1 { font-family: 'Noto Sans Tamil', sans-serif; font-size: 13px; color: #1a237e; font-weight: 500; margin-bottom: 2px; }
+  .header-text h2 { font-size: 18px; color: #138808; font-weight: 600; }
+  .header-kural { margin-left: auto; text-align: right; border-left: 3px solid #ff6b00; padding-left: 16px; }
+  .header-kural p { font-family: 'Noto Sans Tamil', sans-serif; font-size: 12px; color: #c45200; line-height: 1.6; font-style: italic; }
+  .header-kural span { font-size: 10px; color: #999; }
+
+  .nav { background: #1a237e; display: flex; padding: 0 20px; }
+  .nav a { color: #fff; font-size: 13px; padding: 10px 16px; text-decoration: none; border-right: 0.5px solid rgba(255,255,255,0.15); transition: background 0.15s; cursor: pointer; }
+  .nav a:hover, .nav a.active { background: #ff6b00; }
+
+  .breadcrumb-bar { background: #e8eaf6; border-bottom: 1px solid #c5cae9; padding: 8px 30px; font-size: 12px; color: #555; }
+  .breadcrumb-bar a { color: #1a237e; text-decoration: none; cursor: pointer; }
+  .breadcrumb-bar a:hover { text-decoration: underline; }
+  .breadcrumb-bar span { color: #ff6b00; font-weight: 500; }
+
+  /* Steps */
+  .steps-bar { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 14px 30px; }
+  .steps { display: flex; align-items: center; max-width: 700px; margin: 0 auto; }
+  .step { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .step-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .step.done .step-circle { background: #138808; color: #fff; }
+  .step.active .step-circle { background: #ff6b00; color: #fff; }
+  .step.pending .step-circle { background: #e0e0e0; color: #999; }
+  .step-label { font-size: 12px; font-weight: 500; }
+  .step.done .step-label { color: #138808; }
+  .step.active .step-label { color: #ff6b00; }
+  .step.pending .step-label { color: #999; }
+  .step-line { flex: 1; height: 2px; background: #e0e0e0; margin: 0 6px; }
+  .step-line.done { background: #138808; }
+
+  /* Page body */
+  .page-body { max-width: 1100px; margin: 24px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+
+  /* Main panel */
+  .main-panel { background: #fff; border: 0.5px solid #ddd; border-top: 4px solid #ff6b00; border-radius: 3px; }
+  .panel-header { background: #ff6b00; padding: 12px 20px; }
+  .panel-header h3 { color: #fff; font-size: 15px; font-weight: 500; }
+  .panel-header p { color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 2px; }
+  .panel-body { padding: 24px; }
+
+  /* Member detail card */
+  .member-detail-card {
+    background: #e8eaf6;
+    border: 1px solid #c5cae9;
+    border-left: 4px solid #1a237e;
+    border-radius: 2px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .member-big-avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: #1a237e; border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #1a237e;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 600; color: #fff;
+    flex-shrink: 0;
+  }
+  .member-detail-info h4 { font-size: 17px; font-weight: 600; color: #1a237e; margin-bottom: 4px; }
+  .member-detail-info p { font-size: 13px; color: #555; margin-bottom: 3px; }
+  .member-detail-info .badges { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 2px; font-weight: 500; }
+  .badge-blue { background: #e8eaf6; border: 1px solid #9fa8da; color: #1a237e; }
+  .badge-orange { background: #fff3e0; border: 1px solid #ffcc80; color: #e65100; }
+  .badge-green { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; }
+  .badge-red { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; }
+
+  /* Verification box */
+  .verify-section-title {
+    font-size: 13px; font-weight: 600; color: #444;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .verify-box {
+    background: #f9f9f9;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    padding: 36px 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+  }
+  .verify-box.active { border-color: #ff6b00; background: #fff8f0; }
+  .verify-box.success { border-color: #138808; background: #f1f8e9; border-style: solid; }
+  .verify-box.failed { border-color: #c62828; background: #ffebee; border-style: solid; }
+
+  .face-icon-wrap {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: #e8eaf6;
+    border: 3px solid #1a237e;
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    transition: all 0.3s;
+  }
+  .verify-box.active .face-icon-wrap { border-color: #ff6b00; background: #fff3e0; animation: pulse 1.5s infinite; }
+  .verify-box.success .face-icon-wrap { border-color: #138808; background: #e8f5e9; }
+  .verify-box.failed .face-icon-wrap { border-color: #c62828; background: #ffebee; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,107,0,0.3); }
+    50% { box-shadow: 0 0 0 10px rgba(255,107,0,0); }
+  }
+
+  .verify-box h4 { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 6px; }
+  .verify-box p { font-size: 13px; color: #777; line-height: 1.5; }
+
+  /* Attempt counter */
+  .attempt-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #f5f5f5; border: 1px solid #e0e0e0;
+    border-radius: 2px; padding: 10px 14px; margin-bottom: 16px;
+  }
+  .attempt-row span { font-size: 13px; color: #555; }
+  .attempt-dots { display: flex; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: #e0e0e0; transition: background 0.3s; }
+  .dot.used { background: #ef5350; }
+  .dot.success { background: #138808; }
+
+  /* Buttons */
+  .btn-verify {
+    width: 100%; padding: 13px;
+    background: #1a237e; color: #fff; border: none;
+    border-radius: 2px; font-family: 'Noto Sans', sans-serif;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    transition: background 0.2s; display: flex;
+    align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-verify:hover { background: #283593; }
+  .btn-verify:disabled { background: #9e9e9e; cursor: not-allowed; }
+
+  .btn-back {
+    width: 100%; padding: 10px;
+    background: transparent; color: #666;
+    border: 1px solid #ccc; border-radius: 2px;
+    font-family: 'Noto Sans', sans-serif; font-size: 13px;
+    cursor: pointer; margin-top: 8px; transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: #1a237e; color: #1a237e; }
+
+  .status-msg { padding: 10px 14px; border-radius: 2px; font-size: 13px; margin-top: 14px; display: none; }
+  .status-msg.loading { background: #fff3e0; border: 1px solid #ffcc80; color: #e65100; display: flex; align-items: center; gap: 8px; }
+  .status-msg.error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; display: block; }
+  .status-msg.success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; display: block; }
+
+  .spinner { width: 16px; height: 16px; border: 2px solid #ffcc80; border-top-color: #e65100; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Right col */
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+  .info-card { background: #fff; border: 0.5px solid #ddd; border-top: 4px solid #1a237e; border-radius: 3px; }
+  .info-card-header { background: #1a237e; padding: 10px 16px; }
+  .info-card-header h4 { color: #fff; font-size: 13px; font-weight: 500; }
+  .info-card-body { padding: 16px; }
+
+  .verify-steps { display: flex; flex-direction: column; gap: 12px; }
+  .vstep { display: flex; gap: 12px; align-items: flex-start; }
+  .vstep-num { width: 26px; height: 26px; border-radius: 50%; background: #ff6b00; color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .vstep-text h5 { font-size: 13px; color: #1a237e; font-weight: 500; margin-bottom: 2px; }
+  .vstep-text p { font-size: 12px; color: #777; line-height: 1.4; }
+
+  .security-box {
+    background: #e8f5e9; border: 1px solid #a5d6a7;
+    border-left: 4px solid #138808; padding: 12px 14px; border-radius: 2px;
+  }
+  .security-box p { font-size: 12px; color: #1b5e20; line-height: 1.5; }
+
+  .notice-box { background: #fff8e1; border: 1px solid #ffe082; border-left: 4px solid #ffa000; padding: 12px 14px; border-radius: 2px; }
+  .notice-box p { font-size: 12px; color: #5d4037; line-height: 1.5; }
+
+  .kural-card { background: #1a237e; border-radius: 3px; padding: 16px; }
+  .kural-tag { display: inline-block; background: #ff6b00; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 2px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .kural-card p { font-family: 'Noto Sans Tamil', sans-serif; color: #fff; font-size: 13px; line-height: 1.8; margin-bottom: 6px; }
+  .kural-meaning { font-family: 'Noto Sans', sans-serif !important; color: rgba(255,255,255,0.65) !important; font-size: 12px !important; font-style: italic; line-height: 1.6 !important; }
+
+  /* Footer */
+  .site-footer { background: #1a237e; padding: 12px 30px; margin-top: 30px; text-align: center; }
+  .tricolor { display: flex; height: 3px; margin-bottom: 10px; }
+  .tricolor span:nth-child(1) { flex:1; background: #ff6b00; }
+  .tricolor span:nth-child(2) { flex:1; background: #fff; }
+  .tricolor span:nth-child(3) { flex:1; background: #138808; }
+  .site-footer p { color: rgba(255,255,255,0.65); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <span>தமிழ்நாடு அரசு — Government of Tamil Nadu · Smart PDS Portal</span>
+  <div class="top-bar-right">
+    <a href="#">தமிழ்</a>
+    <a href="#">English</a>
+    <a href="#">Help</a>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">⚡</div>
+  <div class="header-text">
+    <h1>தமிழ்நாடு அரசு · பொது விநியோக முறை</h1>
+    <h2>Smart Ration Shop System</h2>
+  </div>
+  <div class="header-kural">
+    <p>மனத்துக்கண் மாசிலன் ஆதல் அனைத்தறன்<br>ஆகுல நீர பிற</p>
+    <span>— திருக்குறள் 34 · Thirukkural</span>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <a onclick="window.location.href='/'">Home</a>
+  <a onclick="window.location.href='/scan'">Scan Card</a>
+  <a onclick="window.location.href='/members'">Select Member</a>
+  <a class="active">Face Verify</a>
+  <a>Contact</a>
+  <a onclick="logout()" style="margin-left:auto; border-left:0.5px solid rgba(255,255,255,0.15); border-right:none;">Logout</a>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <a onclick="window.location.href='/'">Home</a> &rsaquo;
+  <a onclick="window.location.href='/scan'">QR Scanner</a> &rsaquo;
+  <a onclick="window.location.href='/members'">Select Member</a> &rsaquo;
+  <span>Face Verification</span>
+</div>
+
+<!-- Steps -->
+<div class="steps-bar">
+  <div class="steps">
+    <div class="step done">
+      <div class="step-circle">✓</div>
+      <div class="step-label">Scan Card</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step done">
+      <div class="step-circle">✓</div>
+      <div class="step-label">Select Member</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step active">
+      <div class="step-circle">3</div>
+      <div class="step-label">Face Verify</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step pending">
+      <div class="step-circle">4</div>
+      <div class="step-label">Billing</div>
+    </div>
+  </div>
+</div>
+
+<!-- Page Body -->
+<div class="page-body">
+
+  <!-- Main Panel -->
+  <div class="main-panel">
+    <div class="panel-header">
+      <h3>👤 Face Verification · முக சரிபார்ப்பு</h3>
+      <p>Step 3 of 4 — Authenticate the selected member using live face scan</p>
+    </div>
+    <div class="panel-body">
+
+      <!-- Member detail -->
+      <div class="member-detail-card">
+        <div class="member-big-avatar" id="memberAvatar">?</div>
+        <div class="member-detail-info">
+          <h4 id="memberName">Loading...</h4>
+          <p id="memberMeta">—</p>
+          <div class="badges">
+            <span class="badge badge-blue" id="memberIdBadge">ID #—</span>
+            <span class="badge badge-orange" id="memberGenderBadge">—</span>
+            <span class="badge badge-green" id="faceStatusBadge">Face Registered</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="verify-section-title">முக அங்கீகாரம் · Live Face Authentication</div>
+
+      <!-- Attempt tracker -->
+      <div class="attempt-row">
+        <span>Verification Attempts · முயற்சிகள்</span>
+        <div class="attempt-dots">
+          <div class="dot" id="dot1"></div>
+          <div class="dot" id="dot2"></div>
+          <div class="dot" id="dot3"></div>
+        </div>
+      </div>
+
+      <!-- Verify box -->
+      <div class="verify-box" id="verifyBox">
+        <div class="face-icon-wrap" id="faceIconWrap">👤</div>
+        <h4 id="verifyTitle">Ready for Face Scan</h4>
+        <p id="verifyDesc">Click the button below to activate webcam and scan your face for authentication</p>
+      </div>
+
+      <button class="btn-verify" id="verifyBtn" onclick="verifyFace()">
+        <span>📷</span> Start Face Verification · சரிபார்க்கவும்
+      </button>
+      <button class="btn-back" onclick="window.location.href='/members'">← Back to Member Selection</button>
+
+      <div class="status-msg" id="statusMsg"></div>
+
+    </div>
+  </div>
+
+  <!-- Right Column -->
+  <div class="right-col">
+
+    <!-- How it works -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <h4>📋 Verification Steps · சரிபார்ப்பு படிகள்</h4>
+      </div>
+      <div class="info-card-body">
+        <div class="verify-steps">
+          <div class="vstep">
+            <div class="vstep-num">1</div>
+            <div class="vstep-text">
+              <h5>Click Verify Button</h5>
+              <p>Press the button to open your laptop webcam.</p>
+            </div>
+          </div>
+          <div class="vstep">
+            <div class="vstep-num">2</div>
+            <div class="vstep-text">
+              <h5>Face the Camera</h5>
+              <p>Ask the member to look directly at the webcam clearly.</p>
+            </div>
+          </div>
+          <div class="vstep">
+            <div class="vstep-num">3</div>
+            <div class="vstep-text">
+              <h5>Press SPACE to Capture</h5>
+              <p>When face is clearly visible in the window, press the SPACE key.</p>
+            </div>
+          </div>
+          <div class="vstep">
+            <div class="vstep-num">4</div>
+            <div class="vstep-text">
+              <h5>Wait for Result</h5>
+              <p>System compares with stored image and returns match result.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security notice -->
+    <div class="security-box">
+      <p>🔒 <strong>Secure:</strong> Face data is processed locally on this device. No biometric data is transmitted over the internet. All verifications are logged for audit purposes.</p>
+    </div>
+
+    <!-- Warning -->
+    <div class="notice-box">
+      <p>⚠ <strong>Max 3 attempts</strong> allowed per session. Ensure good lighting and remove glasses/mask before scanning. Failed attempts are recorded.</p>
+    </div>
+
+    <!-- Kural -->
+    <div class="kural-card">
+      <div class="kural-tag">Kural · குறள் 34</div>
+      <p>மனத்துக்கண் மாசிலன் ஆதல் அனைத்தறன்<br>ஆகுல நீர பிற</p>
+      <p class="kural-meaning">"To be pure in mind is the essence of all virtue; all else is mere noise and outward show." — Kural 34</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="site-footer">
+  <div class="tricolor"><span></span><span></span><span></span></div>
+  <p>© Government of Tamil Nadu · Smart PDS System · All Rights Reserved · Version 1.0</p>
+</div>
+
+<script>
+  const member = JSON.parse(sessionStorage.getItem('selected_member') || 'null');
+  if (!member) window.location.href = '/scan';
+
+  // Fill member details
+  const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  document.getElementById('memberAvatar').textContent = initials;
+  document.getElementById('memberName').textContent = member.name;
+  document.getElementById('memberMeta').textContent = member.gender + ' · Age ' + member.age + ' · Card: ' + sessionStorage.getItem('card_id');
+  document.getElementById('memberIdBadge').textContent = 'ID #' + member.member_id;
+  document.getElementById('memberGenderBadge').textContent = member.gender;
+
+  const hasFace = member.face_image_path !== null && member.face_image_path !== '';
+  const faceStatusBadge = document.getElementById('faceStatusBadge');
+  if (!hasFace) {
+    faceStatusBadge.textContent = 'Face Not Registered';
+    faceStatusBadge.className = 'badge badge-red';
+  }
+
+  let attempts = 0;
+  const maxAttempts = 3;
+
+  function updateDots(status) {
+    const dot = document.getElementById('dot' + attempts);
+    if (dot) dot.className = 'dot ' + status;
+  }
+
+  async function verifyFace() {
+    if (attempts >= maxAttempts) {
+      document.getElementById('statusMsg').className = 'status-msg error';
+      document.getElementById('statusMsg').textContent = '❌ Maximum attempts reached. Please contact the shop supervisor.';
+      document.getElementById('verifyBtn').disabled = true;
+      return;
+    }
+
+    attempts++;
+    updateDots('used');
+
+    const btn = document.getElementById('verifyBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const verifyBox = document.getElementById('verifyBox');
+    const faceIconWrap = document.getElementById('faceIconWrap');
+    const verifyTitle = document.getElementById('verifyTitle');
+    const verifyDesc = document.getElementById('verifyDesc');
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></div> &nbsp;Verifying...';
+
+    verifyBox.className = 'verify-box active';
+    faceIconWrap.textContent = '📷';
+    verifyTitle.textContent = 'Webcam Active — Scanning...';
+    verifyDesc.textContent = 'Webcam is open. Ask the member to face the camera and press SPACE to capture.';
+
+    statusMsg.className = 'status-msg loading';
+    statusMsg.innerHTML = '<div class="spinner"></div>&nbsp; Webcam is open — press SPACE to capture face...';
+
+    try {
+      const res = await fetch('/api/face/verify/' + member.member_id, { method: 'POST' });
+      const data = await res.json();
+
+      if (data.success) {
+        // Update dot to success
+        document.getElementById('dot' + attempts).className = 'dot success';
+
+        verifyBox.className = 'verify-box success';
+        faceIconWrap.textContent = '✅';
+        verifyTitle.textContent = 'Face Matched Successfully!';
+        verifyDesc.textContent = 'Identity verified. Redirecting to billing...';
+
+        statusMsg.className = 'status-msg success';
+        statusMsg.textContent = '✅ Face verification successful! Proceeding to billing...';
+
+        btn.innerHTML = '✅ Verified — Redirecting...';
+        setTimeout(() => window.location.href = '/billing', 1500);
+
+      } else {
+        verifyBox.className = 'verify-box failed';
+        faceIconWrap.textContent = '❌';
+        verifyTitle.textContent = 'Verification Failed';
+        verifyDesc.textContent = data.message || 'Face did not match. Please try again in good lighting.';
+
+        statusMsg.className = 'status-msg error';
+        statusMsg.textContent = '❌ ' + (data.message || 'Face not matched.') + ' — Attempt ' + attempts + ' of ' + maxAttempts;
+
+        if (attempts < maxAttempts) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>📷</span> Retry Verification · மீண்டும் முயற்சிக்கவும்';
+          setTimeout(() => {
+            verifyBox.className = 'verify-box';
+            faceIconWrap.textContent = '👤';
+            verifyTitle.textContent = 'Ready for Face Scan';
+            verifyDesc.textContent = 'Click the button below to retry face verification.';
+          }, 2000);
+        } else {
+          btn.innerHTML = '❌ Max Attempts Reached';
+          btn.disabled = true;
+        }
+      }
+    } catch(err) {
+      verifyBox.className = 'verify-box failed';
+      faceIconWrap.textContent = '⚠';
+      verifyTitle.textContent = 'Server Error';
+      verifyDesc.textContent = 'Could not connect to the verification server.';
+      statusMsg.className = 'status-msg error';
+      statusMsg.textContent = '❌ Server error. Please check if Flask is running.';
+      btn.disabled = false;
+      btn.innerHTML = '<span>📷</span> Retry Verification';
+      attempts--;
+    }
+  }
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  }
+</script>
+</body>
+</html>

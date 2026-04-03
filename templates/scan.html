@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart PDS — Scan Ration Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+  .top-bar { background: #1a237e; padding: 5px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .top-bar span { color: rgba(255,255,255,0.8); font-size: 11px; }
+  .top-bar-right { display: flex; gap: 16px; }
+  .top-bar a { color: rgba(255,255,255,0.7); font-size: 11px; text-decoration: none; }
+  .top-bar a:hover { color: #fff; }
+
+  .header { background: #fff; border-bottom: 4px solid #ff6b00; padding: 10px 30px; display: flex; align-items: center; gap: 16px; }
+  .header-logo { width: 58px; height: 58px; border-radius: 50%; background: #f5f0e8; border: 2px solid #ff6b00; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .header-text h1 { font-family: 'Noto Sans Tamil', sans-serif; font-size: 13px; color: #1a237e; font-weight: 500; margin-bottom: 2px; }
+  .header-text h2 { font-size: 18px; color: #138808; font-weight: 600; }
+  .header-kural { margin-left: auto; text-align: right; border-left: 3px solid #ff6b00; padding-left: 16px; }
+  .header-kural p { font-family: 'Noto Sans Tamil', sans-serif; font-size: 12px; color: #c45200; line-height: 1.6; font-style: italic; }
+  .header-kural span { font-size: 10px; color: #999; }
+
+  .nav { background: #1a237e; display: flex; padding: 0 20px; }
+  .nav a { color: #fff; font-size: 13px; padding: 10px 16px; text-decoration: none; border-right: 0.5px solid rgba(255,255,255,0.15); transition: background 0.15s; cursor: pointer; }
+  .nav a:hover, .nav a.active { background: #ff6b00; }
+
+  /* Breadcrumb */
+  .breadcrumb-bar { background: #e8eaf6; border-bottom: 1px solid #c5cae9; padding: 8px 30px; font-size: 12px; color: #555; }
+  .breadcrumb-bar a { color: #1a237e; text-decoration: none; }
+  .breadcrumb-bar a:hover { text-decoration: underline; }
+  .breadcrumb-bar span { color: #ff6b00; font-weight: 500; }
+
+  /* Steps bar */
+  .steps-bar { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 14px 30px; }
+  .steps { display: flex; align-items: center; max-width: 700px; margin: 0 auto; }
+  .step { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .step-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .step.done .step-circle { background: #138808; color: #fff; }
+  .step.active .step-circle { background: #ff6b00; color: #fff; }
+  .step.pending .step-circle { background: #e0e0e0; color: #999; }
+  .step-label { font-size: 12px; font-weight: 500; }
+  .step.done .step-label { color: #138808; }
+  .step.active .step-label { color: #ff6b00; }
+  .step.pending .step-label { color: #999; }
+  .step-line { flex: 1; height: 2px; background: #e0e0e0; margin: 0 6px; }
+  .step-line.done { background: #138808; }
+
+  /* Main layout */
+  .page-body { max-width: 1100px; margin: 24px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 360px; gap: 20px; align-items: start; }
+
+  /* Scanner Panel */
+  .scanner-panel { background: #fff; border: 0.5px solid #ddd; border-top: 4px solid #ff6b00; border-radius: 3px; }
+  .panel-header { background: #ff6b00; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
+  .panel-header h3 { color: #fff; font-size: 15px; font-weight: 500; }
+  .panel-header p { color: rgba(255,255,255,0.8); font-size: 12px; margin-top: 2px; }
+  .panel-body { padding: 28px 24px; }
+
+  .scanner-instruction {
+    background: #e8eaf6;
+    border: 1px solid #c5cae9;
+    border-left: 4px solid #1a237e;
+    padding: 12px 16px;
+    border-radius: 2px;
+    margin-bottom: 24px;
+  }
+  .scanner-instruction p { font-size: 13px; color: #1a237e; line-height: 1.6; }
+
+  .scanner-visual {
+    background: #f5f5f5;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    padding: 40px 20px;
+    text-align: center;
+    margin-bottom: 24px;
+    transition: border-color 0.3s;
+  }
+  .scanner-visual.scanning { border-color: #ff6b00; background: #fff8f0; }
+
+  .qr-frame {
+    width: 120px; height: 120px;
+    margin: 0 auto 16px;
+    position: relative;
+  }
+  .qr-frame-inner {
+    width: 100%; height: 100%;
+    border: 3px solid #1a237e;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px;
+    background: #fff;
+  }
+  .qr-frame::before, .qr-frame::after {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+  }
+  .qr-frame::before { top: -4px; left: -4px; border-top: 4px solid #ff6b00; border-left: 4px solid #ff6b00; }
+  .qr-frame::after { bottom: -4px; right: -4px; border-bottom: 4px solid #ff6b00; border-right: 4px solid #ff6b00; }
+
+  .scan-line {
+    width: 80%; height: 2px;
+    background: linear-gradient(90deg, transparent, #ff6b00, transparent);
+    margin: 0 auto;
+    display: none;
+    animation: scanAnim 1.5s ease-in-out infinite;
+  }
+  @keyframes scanAnim { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  .scanner-status { font-size: 14px; color: #555; margin-top: 10px; }
+
+  .btn-scan {
+    width: 100%; padding: 13px;
+    background: #1a237e; color: #fff; border: none;
+    border-radius: 2px; font-family: 'Noto Sans', sans-serif;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-scan:hover { background: #283593; }
+  .btn-scan:disabled { background: #9e9e9e; cursor: not-allowed; }
+
+  .status-msg { padding: 10px 14px; border-radius: 2px; font-size: 13px; margin-top: 14px; display: none; }
+  .status-msg.loading { background: #fff3e0; border: 1px solid #ffcc80; color: #e65100; display: flex; align-items: center; gap: 8px; }
+  .status-msg.error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; display: block; }
+  .status-msg.success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; display: block; }
+
+  .spinner { width: 16px; height: 16px; border: 2px solid #ffcc80; border-top-color: #e65100; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Right Panel */
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+  .info-card { background: #fff; border: 0.5px solid #ddd; border-top: 4px solid #1a237e; border-radius: 3px; }
+  .info-card-header { background: #1a237e; padding: 10px 16px; }
+  .info-card-header h4 { color: #fff; font-size: 13px; font-weight: 500; }
+  .info-card-body { padding: 16px; }
+
+  .step-guide { display: flex; flex-direction: column; gap: 12px; }
+  .guide-item { display: flex; gap: 12px; align-items: flex-start; }
+  .guide-num { width: 26px; height: 26px; border-radius: 50%; background: #ff6b00; color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .guide-text h5 { font-size: 13px; color: #1a237e; font-weight: 500; margin-bottom: 2px; }
+  .guide-text p { font-size: 12px; color: #777; line-height: 1.4; }
+
+  .notice-box { background: #fff8e1; border: 1px solid #ffe082; border-left: 4px solid #ffa000; padding: 12px 14px; border-radius: 2px; }
+  .notice-box p { font-size: 12px; color: #5d4037; line-height: 1.5; }
+  .notice-box strong { color: #e65100; }
+
+  .kural-card { background: #1a237e; border-radius: 3px; padding: 16px; }
+  .kural-tag { display: inline-block; background: #ff6b00; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 2px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .kural-card p { font-family: 'Noto Sans Tamil', sans-serif; color: #fff; font-size: 13px; line-height: 1.8; margin-bottom: 6px; }
+  .kural-meaning { font-family: 'Noto Sans', sans-serif !important; color: rgba(255,255,255,0.65) !important; font-size: 12px !important; font-style: italic; line-height: 1.6 !important; }
+
+  /* Footer */
+  .site-footer { background: #1a237e; padding: 12px 30px; margin-top: 30px; text-align: center; }
+  .tricolor { display: flex; height: 3px; margin-bottom: 10px; }
+  .tricolor span:nth-child(1) { flex:1; background: #ff6b00; }
+  .tricolor span:nth-child(2) { flex:1; background: #fff; }
+  .tricolor span:nth-child(3) { flex:1; background: #138808; }
+  .site-footer p { color: rgba(255,255,255,0.65); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <span>தமிழ்நாடு அரசு — Government of Tamil Nadu · Smart PDS Portal</span>
+  <div class="top-bar-right">
+    <a href="#">தமிழ்</a>
+    <a href="#">English</a>
+    <a href="#">Help</a>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">⚡</div>
+  <div class="header-text">
+    <h1>தமிழ்நாடு அரசு · பொது விநியோக முறை</h1>
+    <h2>Smart Ration Shop System</h2>
+  </div>
+  <div class="header-kural">
+    <p>எண்ணிய எண்ணியாங்கு எய்துப எண்ணியார்<br>திண்ணியர் ஆகப் செயின்</p>
+    <span>— திருக்குறள் 666 · Thirukkural</span>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <a onclick="window.location.href='/'">Home</a>
+  <a class="active">Scan Card</a>
+  <a>Services</a>
+  <a>Districts</a>
+  <a>Contact</a>
+  <a onclick="logout()" style="margin-left:auto; border-left: 0.5px solid rgba(255,255,255,0.15); border-right:none;">Logout</a>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <a href="/">Home</a> &rsaquo;
+  <a href="#">Services</a> &rsaquo;
+  <span>QR Code Ration Card Scanner</span>
+</div>
+
+<!-- Steps Bar -->
+<div class="steps-bar">
+  <div class="steps">
+    <div class="step active">
+      <div class="step-circle">1</div>
+      <div class="step-label">Scan Card</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step pending">
+      <div class="step-circle">2</div>
+      <div class="step-label">Select Member</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step pending">
+      <div class="step-circle">3</div>
+      <div class="step-label">Face Verify</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step pending">
+      <div class="step-circle">4</div>
+      <div class="step-label">Billing</div>
+    </div>
+  </div>
+</div>
+
+<!-- Page Body -->
+<div class="page-body">
+
+  <!-- Scanner Panel -->
+  <div class="scanner-panel">
+    <div class="panel-header">
+      <div>
+        <h3>📱 QR Code Scanner · QR குறியீடு ஸ்கேனர்</h3>
+        <p>Step 1 of 4 — Scan the beneficiary's ration card QR code</p>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="scanner-instruction">
+        <p>📌 <strong>Instructions:</strong> Click "Open Webcam Scanner" below. When the webcam opens, hold the QR code ration card in front of the camera. The system will automatically detect and fetch family details.</p>
+      </div>
+
+      <div class="scanner-visual" id="scannerVisual">
+        <div class="qr-frame">
+          <div class="qr-frame-inner" id="qrIcon">⬛</div>
+        </div>
+        <div class="scan-line" id="scanLine"></div>
+        <div class="scanner-status" id="scannerStatus">Ready to scan — webcam not active</div>
+      </div>
+
+      <button class="btn-scan" id="scanBtn" onclick="startScan()">
+        <span>📷</span> Open Webcam Scanner · ஸ்கேன் செய்யுங்கள்
+      </button>
+
+      <div class="status-msg" id="statusMsg"></div>
+
+    </div>
+  </div>
+
+  <!-- Right Column -->
+  <div class="right-col">
+
+    <!-- How it works -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <h4>📋 How It Works · எவ்வாறு செயல்படுகிறது</h4>
+      </div>
+      <div class="info-card-body">
+        <div class="step-guide">
+          <div class="guide-item">
+            <div class="guide-num">1</div>
+            <div class="guide-text">
+              <h5>Click Scanner Button</h5>
+              <p>Press the button to activate your laptop webcam.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-num">2</div>
+            <div class="guide-text">
+              <h5>Show QR Code</h5>
+              <p>Hold the printed QR ration card in front of the camera clearly.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-num">3</div>
+            <div class="guide-text">
+              <h5>Auto Detection</h5>
+              <p>System reads card ID and fetches all family members automatically.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-num">4</div>
+            <div class="guide-text">
+              <h5>Proceed to Selection</h5>
+              <p>You will be redirected to select the visiting member.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notice -->
+    <div class="notice-box">
+      <p>⚠ <strong>Note:</strong> Ensure good lighting while scanning. If QR code is not detected within 30 seconds, press ESC and try again. Card must be undamaged and clearly printed.</p>
+    </div>
+
+    <!-- Kural -->
+    <div class="kural-card">
+      <div class="kural-tag">Kural of the Day · இன்றைய குறள்</div>
+      <p>எண்ணிய எண்ணியாங்கு எய்துப எண்ணியார்<br>திண்ணியர் ஆகப் செயின்</p>
+      <p class="kural-meaning">"Those who think and act with firm determination will achieve exactly what they set out to do." — Kural 666</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="site-footer">
+  <div class="tricolor"><span></span><span></span><span></span></div>
+  <p>© Government of Tamil Nadu · Smart PDS System · All Rights Reserved · Version 1.0</p>
+</div>
+
+<script>
+  async function startScan() {
+    const btn = document.getElementById('scanBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const scanLine = document.getElementById('scanLine');
+    const scannerStatus = document.getElementById('scannerStatus');
+    const scannerVisual = document.getElementById('scannerVisual');
+    const qrIcon = document.getElementById('qrIcon');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="border-color:#aaa;border-top-color:#fff;display:inline-block;width:16px;height:16px;border-width:2px;border-style:solid;border-radius:50%;animation:spin 0.8s linear infinite;"></span> &nbsp;Scanning in progress...';
+    scanLine.style.display = 'block';
+    scannerVisual.classList.add('scanning');
+    scannerStatus.textContent = 'Webcam is open — show QR code to camera...';
+    qrIcon.textContent = '📷';
+
+    statusMsg.className = 'status-msg loading';
+    statusMsg.innerHTML = '<div class="spinner"></div> Webcam is active — hold QR code in front of camera and press SPACE...';
+
+    try {
+      const res = await fetch('/api/qr/scan');
+      const data = await res.json();
+
+      scanLine.style.display = 'none';
+      scannerVisual.classList.remove('scanning');
+
+      if (data.success) {
+        qrIcon.textContent = '✅';
+        scannerStatus.textContent = 'QR Code detected successfully!';
+        statusMsg.className = 'status-msg success';
+        statusMsg.textContent = '✅ Card ID: ' + data.card_id + ' — ' + data.members.length + ' member(s) found. Redirecting...';
+        sessionStorage.setItem('card_id', data.card_id);
+        sessionStorage.setItem('members', JSON.stringify(data.members));
+        setTimeout(() => window.location.href = '/members', 1400);
+      } else {
+        qrIcon.textContent = '❌';
+        scannerStatus.textContent = 'Scan failed — please try again';
+        statusMsg.className = 'status-msg error';
+        statusMsg.textContent = '❌ ' + (data.message || 'QR code not detected. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<span>📷</span> Open Webcam Scanner · ஸ்கேன் செய்யுங்கள்';
+      }
+    } catch(err) {
+      scanLine.style.display = 'none';
+      scannerVisual.classList.remove('scanning');
+      qrIcon.textContent = '❌';
+      scannerStatus.textContent = 'Server error — please try again';
+      statusMsg.className = 'status-msg error';
+      statusMsg.textContent = '❌ Server error. Make sure Flask is running.';
+      btn.disabled = false;
+      btn.innerHTML = '<span>📷</span> Open Webcam Scanner · ஸ்கேன் செய்யுங்கள்';
+    }
+  }
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  }
+</script>
+</body>
+</html>

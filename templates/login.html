@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart PDS — Shop Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans', sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+  }
+
+  /* Top accessibility bar */
+  .top-bar {
+    background: #1a237e;
+    padding: 5px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .top-bar span { color: rgba(255,255,255,0.8); font-size: 11px; }
+  .top-bar-right { display: flex; gap: 16px; align-items: center; }
+  .top-bar a { color: rgba(255,255,255,0.7); font-size: 11px; text-decoration: none; }
+  .top-bar a:hover { color: #fff; }
+
+  /* Header */
+  .header {
+    background: #fff;
+    border-bottom: 4px solid #ff6b00;
+    padding: 12px 30px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .header-logo {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: #f5f0e8;
+    border: 2px solid #ff6b00;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+  .header-text h1 {
+    font-family: 'Noto Sans Tamil', sans-serif;
+    font-size: 14px;
+    color: #1a237e;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .header-text h2 {
+    font-size: 20px;
+    color: #138808;
+    font-weight: 600;
+  }
+  .header-text p {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+  }
+  .header-kural {
+    margin-left: auto;
+    text-align: right;
+    border-left: 3px solid #ff6b00;
+    padding-left: 16px;
+  }
+  .header-kural p {
+    font-family: 'Noto Sans Tamil', sans-serif;
+    font-size: 13px;
+    color: #c45200;
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .header-kural span {
+    font-size: 11px;
+    color: #999;
+  }
+
+  /* Nav */
+  .nav {
+    background: #1a237e;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .nav a {
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 16px;
+    text-decoration: none;
+    border-right: 0.5px solid rgba(255,255,255,0.15);
+    display: block;
+    transition: background 0.15s;
+  }
+  .nav a:hover, .nav a.active { background: #ff6b00; }
+
+  /* Page body */
+  .page-body {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* Left info panel */
+  .info-panel {
+    background: #fff;
+    border: 0.5px solid #ddd;
+    border-top: 4px solid #1a237e;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .info-panel-header {
+    background: #1a237e;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .info-panel-header h3 {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .info-panel-body { padding: 20px; }
+
+  .service-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 0.5px solid #eee;
+  }
+  .service-item:last-child { border-bottom: none; }
+  .service-icon {
+    width: 42px; height: 42px;
+    background: #fff3e0;
+    border: 1px solid #ff6b00;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .service-info h4 {
+    font-size: 14px;
+    color: #1a237e;
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+  .service-info p { font-size: 12px; color: #777; line-height: 1.5; }
+
+  /* Kural section */
+  .kural-section {
+    background: #1a237e;
+    padding: 16px 20px;
+    margin-top: 16px;
+  }
+  .kural-tag {
+    display: inline-block;
+    background: #ff6b00;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .kural-section p {
+    font-family: 'Noto Sans Tamil', sans-serif;
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 6px;
+  }
+  .kural-section .kural-meaning {
+    font-family: 'Noto Sans', sans-serif;
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* Login form panel */
+  .login-panel {
+    background: #fff;
+    border: 0.5px solid #ddd;
+    border-top: 4px solid #ff6b00;
+    border-radius: 3px;
+  }
+  .login-panel-header {
+    background: #ff6b00;
+    padding: 14px 20px;
+  }
+  .login-panel-header h3 {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .login-panel-header p {
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .login-form { padding: 24px 20px; }
+
+  .form-group { margin-bottom: 18px; }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  label span { color: #e53935; }
+
+  input, select {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    padding: 10px 12px;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+  }
+  input:focus, select:focus {
+    border-color: #1a237e;
+    box-shadow: 0 0 0 3px rgba(26,35,126,0.1);
+  }
+  select option { background: #fff; color: #333; }
+
+  .captcha-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .captcha-box {
+    background: #f0f2f5;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    padding: 10px 16px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: #1a237e;
+    font-family: monospace;
+    user-select: none;
+    min-width: 110px;
+    text-align: center;
+  }
+  .captcha-input { flex: 1; }
+
+  .btn-login {
+    width: 100%;
+    padding: 12px;
+    background: #1a237e;
+    color: #fff;
+    border: none;
+    border-radius: 2px;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 6px;
+  }
+  .btn-login:hover { background: #283593; }
+  .btn-login:active { background: #0d1257; }
+
+  .btn-reset {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    color: #666;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-reset:hover { border-color: #ff6b00; color: #ff6b00; }
+
+  .error-msg {
+    background: #ffebee;
+    border: 1px solid #ef9a9a;
+    color: #c62828;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 2px;
+    margin-top: 12px;
+    display: none;
+  }
+  .success-msg {
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    color: #2e7d32;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 2px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .login-footer {
+    padding: 12px 20px;
+    background: #f5f5f5;
+    border-top: 0.5px solid #eee;
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+  }
+
+  /* Footer */
+  .site-footer {
+    background: #1a237e;
+    padding: 12px 30px;
+    margin-top: 30px;
+    text-align: center;
+  }
+  .site-footer p { color: rgba(255,255,255,0.65); font-size: 12px; }
+  .site-footer .tricolor {
+    display: flex;
+    height: 3px;
+    margin-bottom: 10px;
+  }
+  .site-footer .tricolor span:nth-child(1) { flex:1; background: #ff6b00; }
+  .site-footer .tricolor span:nth-child(2) { flex:1; background: #fff; }
+  .site-footer .tricolor span:nth-child(3) { flex:1; background: #138808; }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <span>தமிழ்நாடு அரசு — Government of Tamil Nadu · Smart PDS Portal</span>
+  <div class="top-bar-right">
+    <a href="#">தமிழ்</a>
+    <a href="#">English</a>
+    <a href="#">Help</a>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">⚡</div>
+  <div class="header-text">
+    <h1>தமிழ்நாடு அரசு · பொது விநியோக முறை</h1>
+    <h2>Smart Ration Shop System</h2>
+    <p>AI-Powered Public Distribution System · Face Recognition & QR Authentication</p>
+  </div>
+  <div class="header-kural">
+    <p>அகர முதல எழுத்தெல்லாம் ஆதி<br>பகவன் முதற்றே உலகு</p>
+    <span>— திருக்குறள் 1 · Thirukkural</span>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <a class="active">Home</a>
+  <a>Shop Login</a>
+  <a>Services</a>
+  <a>Districts</a>
+  <a>Contact</a>
+  <a>Help</a>
+</div>
+
+<!-- Page Body -->
+<div class="page-body">
+
+  <!-- Left Info Panel -->
+  <div>
+    <div class="info-panel">
+      <div class="info-panel-header">
+        <span style="font-size:18px">📋</span>
+        <h3>Available Services — சேவைகள்</h3>
+      </div>
+      <div class="info-panel-body">
+        <div class="service-item">
+          <div class="service-icon">📱</div>
+          <div class="service-info">
+            <h4>QR Code Card Scanning</h4>
+            <p>Scan ration card QR code via webcam to instantly fetch family details from the database.</p>
+          </div>
+        </div>
+        <div class="service-item">
+          <div class="service-icon">👤</div>
+          <div class="service-info">
+            <h4>Face Recognition Verification</h4>
+            <p>AI-powered live face scan to authenticate the beneficiary without fingerprint device.</p>
+          </div>
+        </div>
+        <div class="service-item">
+          <div class="service-icon">🌾</div>
+          <div class="service-info">
+            <h4>Automated Ration Billing</h4>
+            <p>Smart quota management — track, verify and deduct monthly ration items automatically.</p>
+          </div>
+        </div>
+        <div class="service-item">
+          <div class="service-icon">📧</div>
+          <div class="service-info">
+            <h4>SMS / Email Notification</h4>
+            <p>Instant bill notification sent to the beneficiary after every successful transaction.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kural section -->
+    <div class="kural-section" style="border-radius:3px; margin-top:16px;">
+      <div class="kural-tag">Thirukkural · அறத்துப்பால்</div>
+      <p>ஒழுக்கம் விழுப்பந் தரலான் ஒழுக்கம்<br>உயிரினும் ஓம்பப் படும்</p>
+      <div class="kural-meaning">"Discipline yields greatness, hence discipline must be guarded more than life itself." — Kural 131</div>
+    </div>
+  </div>
+
+  <!-- Login Panel -->
+  <div class="login-panel">
+    <div class="login-panel-header">
+      <h3>🔐 Shopkeeper Login · கடை உள்நுழைவு</h3>
+      <p>Authorized personnel only — அங்கீகரிக்கப்பட்ட பணியாளர்கள் மட்டும்</p>
+    </div>
+    <div class="login-form">
+
+      <div class="form-group">
+        <label>Shop Name <span>*</span></label>
+        <select id="shop_name">
+          <option value="">— Select Your Shop —</option>
+          <option value="Gandhi Nagar Ration Shop">Gandhi Nagar Ration Shop</option>
+          <option value="Anna Nagar Ration Shop">Anna Nagar Ration Shop</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>District <span>*</span></label>
+        <select id="district">
+          <option value="">— Select District —</option>
+          <option value="Chennai">Chennai</option>
+          <option value="Coimbatore">Coimbatore</option>
+          <option value="Madurai">Madurai</option>
+          <option value="Salem">Salem</option>
+          <option value="Trichy">Trichy</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Password / கடவுச்சொல் <span>*</span></label>
+        <input type="password" id="password" placeholder="Enter shop password" />
+      </div>
+
+      <div class="form-group">
+        <label>Captcha Verification <span>*</span></label>
+        <div class="captcha-row">
+          <div class="captcha-box" id="captchaDisplay">A7X2K</div>
+          <input type="text" class="captcha-input" id="captchaInput" placeholder="Enter captcha" maxlength="5" />
+        </div>
+      </div>
+
+      <button class="btn-login" onclick="login()">Login to Portal →</button>
+      <button class="btn-reset" onclick="resetForm()">Clear / Reset</button>
+
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="success-msg" id="successMsg"></div>
+    </div>
+    <div class="login-footer">
+      🔒 Secure Login · For technical support contact: pds-helpdesk@tn.gov.in
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="site-footer">
+  <div class="tricolor"><span></span><span></span><span></span></div>
+  <p>© Government of Tamil Nadu · Smart PDS System · All Rights Reserved · Version 1.0</p>
+</div>
+
+<script>
+  // Simple captcha
+  function generateCaptcha() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let cap = '';
+    for (let i = 0; i < 5; i++) cap += chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById('captchaDisplay').textContent = cap;
+  }
+  generateCaptcha();
+  document.getElementById('captchaDisplay').onclick = generateCaptcha;
+
+  async function login() {
+    const shop_name = document.getElementById('shop_name').value;
+    const password = document.getElementById('password').value;
+    const captcha = document.getElementById('captchaInput').value.toUpperCase();
+    const captchaExpected = document.getElementById('captchaDisplay').textContent;
+    const errorDiv = document.getElementById('errorMsg');
+    const successDiv = document.getElementById('successMsg');
+
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+
+    if (!shop_name) { errorDiv.textContent = '⚠ Please select a shop.'; errorDiv.style.display = 'block'; return; }
+    if (!password) { errorDiv.textContent = '⚠ Please enter your password.'; errorDiv.style.display = 'block'; return; }
+    if (captcha !== captchaExpected) { errorDiv.textContent = '⚠ Captcha does not match. Please try again.'; errorDiv.style.display = 'block'; generateCaptcha(); document.getElementById('captchaInput').value = ''; return; }
+
+    const btn = document.querySelector('.btn-login');
+    btn.textContent = 'Verifying...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shop_name, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        successDiv.textContent = '✅ Login successful! Redirecting to scanner...';
+        successDiv.style.display = 'block';
+        setTimeout(() => window.location.href = '/scan', 1200);
+      } else {
+        errorDiv.textContent = '❌ ' + (data.message || 'Invalid credentials. Please try again.');
+        errorDiv.style.display = 'block';
+        btn.textContent = 'Login to Portal →';
+        btn.disabled = false;
+        generateCaptcha();
+      }
+    } catch(err) {
+      errorDiv.textContent = '❌ Server error. Please try again.';
+      errorDiv.style.display = 'block';
+      btn.textContent = 'Login to Portal →';
+      btn.disabled = false;
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('shop_name').value = '';
+    document.getElementById('district').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('captchaInput').value = '';
+    document.getElementById('errorMsg').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'none';
+    generateCaptcha();
+  }
+
+  document.getElementById('password').addEventListener('keypress', e => {
+    if (e.key === 'Enter') login();
+  });
+</script>
+</body>
+</html>

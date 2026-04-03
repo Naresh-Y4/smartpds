@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart PDS — Billing</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+  .top-bar { background: #1a237e; padding: 5px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .top-bar span { color: rgba(255,255,255,0.8); font-size: 11px; }
+  .top-bar-right { display: flex; gap: 16px; }
+  .top-bar a { color: rgba(255,255,255,0.7); font-size: 11px; text-decoration: none; }
+  .top-bar a:hover { color: #fff; }
+
+  .header { background: #fff; border-bottom: 4px solid #ff6b00; padding: 10px 30px; display: flex; align-items: center; gap: 16px; }
+  .header-logo { width: 58px; height: 58px; border-radius: 50%; background: #f5f0e8; border: 2px solid #ff6b00; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .header-text h1 { font-family: 'Noto Sans Tamil', sans-serif; font-size: 13px; color: #1a237e; font-weight: 500; margin-bottom: 2px; }
+  .header-text h2 { font-size: 18px; color: #138808; font-weight: 600; }
+  .header-kural { margin-left: auto; text-align: right; border-left: 3px solid #ff6b00; padding-left: 16px; }
+  .header-kural p { font-family: 'Noto Sans Tamil', sans-serif; font-size: 12px; color: #c45200; line-height: 1.6; font-style: italic; }
+  .header-kural span { font-size: 10px; color: #999; }
+
+  .nav { background: #1a237e; display: flex; padding: 0 20px; }
+  .nav a { color: #fff; font-size: 13px; padding: 10px 16px; text-decoration: none; border-right: 0.5px solid rgba(255,255,255,0.15); transition: background 0.15s; cursor: pointer; }
+  .nav a:hover, .nav a.active { background: #ff6b00; }
+
+  .breadcrumb-bar { background: #e8eaf6; border-bottom: 1px solid #c5cae9; padding: 8px 30px; font-size: 12px; color: #555; }
+  .breadcrumb-bar a { color: #1a237e; text-decoration: none; cursor: pointer; }
+  .breadcrumb-bar a:hover { text-decoration: underline; }
+  .breadcrumb-bar span { color: #ff6b00; font-weight: 500; }
+
+  /* Steps */
+  .steps-bar { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 14px 30px; }
+  .steps { display: flex; align-items: center; max-width: 700px; margin: 0 auto; }
+  .step { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .step-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .step.done .step-circle { background: #138808; color: #fff; }
+  .step.active .step-circle { background: #ff6b00; color: #fff; }
+  .step.pending .step-circle { background: #e0e0e0; color: #999; }
+  .step-label { font-size: 12px; font-weight: 500; }
+  .step.done .step-label { color: #138808; }
+  .step.active .step-label { color: #ff6b00; }
+  .step.pending .step-label { color: #999; }
+  .step-line { flex: 1; height: 2px; background: #e0e0e0; margin: 0 6px; }
+  .step-line.done { background: #138808; }
+
+  /* Page body */
+  .page-body { max-width: 1100px; margin: 24px auto; padding: 0 20px; }
+
+  /* Billing layout */
+  .billing-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+
+  /* Panels */
+  .panel { background: #fff; border: 0.5px solid #ddd; border-top: 4px solid #ff6b00; border-radius: 3px; }
+  .panel-header { background: #ff6b00; padding: 12px 20px; }
+  .panel-header h3 { color: #fff; font-size: 15px; font-weight: 500; }
+  .panel-header p { color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 2px; }
+  .panel-body { padding: 20px 24px; }
+
+  .panel-blue { border-top-color: #1a237e; }
+  .panel-blue .panel-header { background: #1a237e; }
+
+  /* Member bar */
+  .member-bar {
+    background: #e8eaf6; border: 1px solid #c5cae9;
+    border-left: 4px solid #1a237e; border-radius: 2px;
+    padding: 12px 16px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .bar-avatar { width: 42px; height: 42px; border-radius: 50%; background: #1a237e; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; flex-shrink: 0; }
+  .bar-info h4 { font-size: 15px; font-weight: 600; color: #1a237e; }
+  .bar-info p { font-size: 12px; color: #666; margin-top: 2px; }
+  .verified-badge { margin-left: auto; background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; font-size: 11px; padding: 4px 10px; border-radius: 2px; font-weight: 500; white-space: nowrap; }
+
+  /* Section title */
+  .section-title { font-size: 13px; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+
+  /* Items table */
+  .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  .items-table thead tr { background: #1a237e; }
+  .items-table thead th { color: #fff; font-size: 12px; font-weight: 500; padding: 10px 14px; text-align: left; }
+  .items-table tbody tr { border-bottom: 1px solid #f0f0f0; }
+  .items-table tbody td { padding: 14px; font-size: 13px; color: #333; vertical-align: middle; }
+
+  .item-name-cell { display: flex; align-items: center; gap: 10px; }
+  .item-emoji { font-size: 22px; }
+  .item-label h5 { font-size: 14px; font-weight: 500; color: #1a237e; }
+  .item-label p { font-size: 11px; color: #999; margin-top: 1px; }
+
+  /* Quota bar */
+  .quota-bar-wrap { min-width: 120px; }
+  .quota-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: #777; margin-bottom: 4px; }
+  .quota-bar-track { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+  .quota-bar-fill { height: 100%; background: #138808; border-radius: 3px; transition: width 0.3s; }
+  .quota-bar-fill.warn { background: #ffa000; }
+  .quota-bar-fill.over { background: #e53935; }
+
+  /* Qty controls */
+  .qty-controls { display: flex; align-items: center; gap: 8px; }
+  .qty-btn { width: 30px; height: 30px; border-radius: 2px; border: 1px solid #ccc; background: #f5f5f5; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; color: #333; line-height: 1; }
+  .qty-btn:hover { border-color: #ff6b00; background: #fff3e0; color: #ff6b00; }
+  .qty-display { font-size: 16px; font-weight: 600; color: #1a237e; min-width: 36px; text-align: center; font-family: monospace; }
+  .qty-unit { font-size: 11px; color: #999; }
+
+  /* Generate button */
+  .btn-generate {
+    width: 100%; padding: 13px;
+    background: #138808; color: #fff; border: none;
+    border-radius: 2px; font-family: 'Noto Sans', sans-serif;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    transition: background 0.2s; display: flex;
+    align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-generate:hover { background: #0f6806; }
+  .btn-generate:disabled { background: #9e9e9e; cursor: not-allowed; }
+
+  .status-msg { padding: 10px 14px; border-radius: 2px; font-size: 13px; margin-top: 14px; display: none; }
+  .status-msg.loading { background: #fff3e0; border: 1px solid #ffcc80; color: #e65100; display: flex; align-items: center; gap: 8px; }
+  .status-msg.error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; display: block; }
+  .status-msg.success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; display: block; }
+  .spinner { width: 16px; height: 16px; border: 2px solid #ffcc80; border-top-color: #e65100; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Summary panel */
+  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+  .summary-row:last-of-type { border-bottom: none; }
+  .summary-label { color: #666; display: flex; align-items: center; gap: 6px; }
+  .summary-value { font-weight: 600; color: #1a237e; font-family: monospace; }
+  .summary-value.zero { color: #ccc; font-weight: 400; }
+
+  .summary-total-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 2px solid #1a237e; margin-top: 4px; }
+  .summary-total-label { font-size: 14px; font-weight: 600; color: #1a237e; text-transform: uppercase; letter-spacing: 0.5px; }
+  .summary-total-value { font-size: 22px; font-weight: 700; color: #ff6b00; font-family: monospace; }
+
+  .kural-card { background: #1a237e; border-radius: 3px; padding: 16px; margin-top: 16px; }
+  .kural-tag { display: inline-block; background: #ff6b00; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 2px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .kural-card p { font-family: 'Noto Sans Tamil', sans-serif; color: #fff; font-size: 13px; line-height: 1.8; margin-bottom: 6px; }
+  .kural-meaning { font-family: 'Noto Sans', sans-serif !important; color: rgba(255,255,255,0.65) !important; font-size: 12px !important; font-style: italic; line-height: 1.6 !important; }
+
+  /* ── RECEIPT ── */
+  #receiptSection { display: none; }
+
+  .receipt-wrap { max-width: 680px; margin: 0 auto; }
+
+  .receipt-success-bar {
+    background: #138808; color: #fff;
+    padding: 18px 24px; border-radius: 3px 3px 0 0;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .receipt-success-bar .icon { font-size: 32px; }
+  .receipt-success-bar h3 { font-size: 18px; font-weight: 600; }
+  .receipt-success-bar p { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+
+  .receipt-body {
+    background: #fff; border: 1px solid #a5d6a7;
+    border-top: none; border-radius: 0 0 3px 3px; padding: 24px;
+  }
+
+  .receipt-header-row {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 20px;
+    padding-bottom: 16px; border-bottom: 2px dashed #e0e0e0;
+  }
+  .receipt-shop h4 { font-size: 15px; font-weight: 600; color: #1a237e; }
+  .receipt-shop p { font-size: 12px; color: #777; margin-top: 3px; }
+  .receipt-bill-id { text-align: right; }
+  .receipt-bill-id .bill-num { font-size: 20px; font-weight: 700; color: #ff6b00; font-family: monospace; }
+  .receipt-bill-id p { font-size: 11px; color: #999; margin-top: 2px; }
+
+  .receipt-member-row {
+    background: #e8eaf6; border: 1px solid #c5cae9;
+    border-radius: 2px; padding: 12px 16px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .receipt-avatar { width: 38px; height: 38px; border-radius: 50%; background: #1a237e; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #fff; flex-shrink: 0; }
+  .receipt-member-info h5 { font-size: 14px; font-weight: 600; color: #1a237e; }
+  .receipt-member-info p { font-size: 12px; color: #666; margin-top: 2px; }
+
+  .receipt-items-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  .receipt-items-table thead tr { background: #f5f5f5; }
+  .receipt-items-table thead th { font-size: 12px; font-weight: 600; color: #555; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e0e0e0; text-transform: uppercase; letter-spacing: 0.5px; }
+  .receipt-items-table tbody td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #f5f5f5; }
+  .receipt-items-table tfoot td { padding: 10px 12px; font-size: 14px; font-weight: 700; background: #f9f9f9; border-top: 2px solid #1a237e; color: #1a237e; }
+
+  .receipt-footer-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding-top: 16px;
+    border-top: 2px dashed #e0e0e0; flex-wrap: wrap; gap: 10px;
+  }
+  .notif-status { font-size: 12px; color: #2e7d32; background: #e8f5e9; border: 1px solid #a5d6a7; padding: 4px 10px; border-radius: 2px; }
+
+  .btn-new-txn {
+    padding: 11px 28px; background: #1a237e; color: #fff; border: none;
+    border-radius: 2px; font-family: 'Noto Sans', sans-serif; font-size: 14px;
+    font-weight: 500; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-new-txn:hover { background: #283593; }
+  .btn-print {
+    padding: 11px 20px; background: transparent; color: #1a237e;
+    border: 1px solid #1a237e; border-radius: 2px;
+    font-family: 'Noto Sans', sans-serif; font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-print:hover { background: #e8eaf6; }
+
+  /* Footer */
+  .site-footer { background: #1a237e; padding: 12px 30px; margin-top: 30px; text-align: center; }
+  .tricolor { display: flex; height: 3px; margin-bottom: 10px; }
+  .tricolor span:nth-child(1) { flex:1; background: #ff6b00; }
+  .tricolor span:nth-child(2) { flex:1; background: #fff; }
+  .tricolor span:nth-child(3) { flex:1; background: #138808; }
+  .site-footer p { color: rgba(255,255,255,0.65); font-size: 12px; }
+
+  @media print {
+    .top-bar, .header, .nav, .breadcrumb-bar, .steps-bar, .site-footer,
+    .btn-new-txn, .btn-print { display: none !important; }
+    body { background: #fff; }
+    #billingSection { display: none !important; }
+    #receiptSection { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <span>தமிழ்நாடு அரசு — Government of Tamil Nadu · Smart PDS Portal</span>
+  <div class="top-bar-right">
+    <a href="#">தமிழ்</a>
+    <a href="#">English</a>
+    <a href="#">Help</a>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">⚡</div>
+  <div class="header-text">
+    <h1>தமிழ்நாடு அரசு · பொது விநியோக முறை</h1>
+    <h2>Smart Ration Shop System</h2>
+  </div>
+  <div class="header-kural">
+    <p>உதவி வரைத்தன்று உதவி உதவி<br>செயப்பட்டார் சால்பின் வரைத்து</p>
+    <span>— திருக்குறள் 101 · Thirukkural</span>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <a onclick="window.location.href='/'">Home</a>
+  <a onclick="window.location.href='/scan'">Scan Card</a>
+  <a onclick="window.location.href='/members'">Select Member</a>
+  <a onclick="window.location.href='/verify'">Face Verify</a>
+  <a class="active">Billing</a>
+  <a onclick="logout()" style="margin-left:auto; border-left:0.5px solid rgba(255,255,255,0.15); border-right:none;">Logout</a>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <a onclick="window.location.href='/'">Home</a> &rsaquo;
+  <a onclick="window.location.href='/scan'">QR Scanner</a> &rsaquo;
+  <a onclick="window.location.href='/members'">Select Member</a> &rsaquo;
+  <a onclick="window.location.href='/verify'">Face Verify</a> &rsaquo;
+  <span>Billing</span>
+</div>
+
+<!-- Steps -->
+<div class="steps-bar">
+  <div class="steps">
+    <div class="step done"><div class="step-circle">✓</div><div class="step-label">Scan Card</div></div>
+    <div class="step-line done"></div>
+    <div class="step done"><div class="step-circle">✓</div><div class="step-label">Select Member</div></div>
+    <div class="step-line done"></div>
+    <div class="step done"><div class="step-circle">✓</div><div class="step-label">Face Verify</div></div>
+    <div class="step-line done"></div>
+    <div class="step active"><div class="step-circle">4</div><div class="step-label">Billing</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ BILLING SECTION ═══════════════ -->
+<div id="billingSection">
+  <div class="page-body">
+    <div class="billing-grid">
+
+      <!-- Left: Items Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>🌾 Ration Item Selection · பொருட்கள் தேர்வு</h3>
+          <p>Step 4 of 4 — Select items and quantity within monthly quota</p>
+        </div>
+        <div class="panel-body">
+
+          <div class="member-bar">
+            <div class="bar-avatar" id="barAvatar">?</div>
+            <div class="bar-info">
+              <h4 id="barName">Loading...</h4>
+              <p id="barMeta">—</p>
+            </div>
+            <div class="verified-badge">✓ Face Verified</div>
+          </div>
+
+          <div class="section-title">மாதாந்திர பொருட்கள் · Monthly Ration Items</div>
+
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item · பொருள்</th>
+                <th>Monthly Quota</th>
+                <th>Remaining</th>
+                <th>Quantity · அளவு</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rice -->
+              <tr>
+                <td>
+                  <div class="item-name-cell">
+                    <span class="item-emoji">🌾</span>
+                    <div class="item-label">
+                      <h5>Rice · அரிசி</h5>
+                      <p>Per Person / Month</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span style="font-family:monospace;font-weight:600;color:#1a237e;" id="riceQuota">5.0 kg</span></td>
+                <td>
+                  <div class="quota-bar-wrap">
+                    <div class="quota-bar-label">
+                      <span id="riceRemLabel">5.0 kg left</span>
+                    </div>
+                    <div class="quota-bar-track">
+                      <div class="quota-bar-fill" id="riceBar" style="width:100%"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="qty-controls">
+                    <button class="qty-btn" onclick="changeQty('rice',-0.5)">−</button>
+                    <div>
+                      <div class="qty-display" id="riceQty">0</div>
+                      <div class="qty-unit">kg</div>
+                    </div>
+                    <button class="qty-btn" onclick="changeQty('rice',0.5)">+</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Sugar -->
+              <tr>
+                <td>
+                  <div class="item-name-cell">
+                    <span class="item-emoji">🍬</span>
+                    <div class="item-label">
+                      <h5>Sugar · சர்க்கரை</h5>
+                      <p>Per Person / Month</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span style="font-family:monospace;font-weight:600;color:#1a237e;" id="sugarQuota">1.0 kg</span></td>
+                <td>
+                  <div class="quota-bar-wrap">
+                    <div class="quota-bar-label">
+                      <span id="sugarRemLabel">1.0 kg left</span>
+                    </div>
+                    <div class="quota-bar-track">
+                      <div class="quota-bar-fill" id="sugarBar" style="width:100%"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="qty-controls">
+                    <button class="qty-btn" onclick="changeQty('sugar',-0.5)">−</button>
+                    <div>
+                      <div class="qty-display" id="sugarQty">0</div>
+                      <div class="qty-unit">kg</div>
+                    </div>
+                    <button class="qty-btn" onclick="changeQty('sugar',0.5)">+</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Oil -->
+              <tr>
+                <td>
+                  <div class="item-name-cell">
+                    <span class="item-emoji">🫙</span>
+                    <div class="item-label">
+                      <h5>Oil · எண்ணெய்</h5>
+                      <p>Per Person / Month</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span style="font-family:monospace;font-weight:600;color:#1a237e;" id="oilQuota">1.0 L</span></td>
+                <td>
+                  <div class="quota-bar-wrap">
+                    <div class="quota-bar-label">
+                      <span id="oilRemLabel">1.0 L left</span>
+                    </div>
+                    <div class="quota-bar-track">
+                      <div class="quota-bar-fill" id="oilBar" style="width:100%"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="qty-controls">
+                    <button class="qty-btn" onclick="changeQty('oil',-0.5)">−</button>
+                    <div>
+                      <div class="qty-display" id="oilQty">0</div>
+                      <div class="qty-unit">L</div>
+                    </div>
+                    <button class="qty-btn" onclick="changeQty('oil',0.5)">+</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <button class="btn-generate" id="generateBtn" onclick="generateBill()">
+            🧾 Generate Bill · பட்டியல் உருவாக்கு
+          </button>
+          <div class="status-msg" id="statusMsg"></div>
+
+        </div>
+      </div>
+
+      <!-- Right: Summary + Kural -->
+      <div>
+        <div class="panel panel-blue">
+          <div class="panel-header">
+            <h3>🧾 Bill Summary · பட்டியல் சுருக்கம்</h3>
+            <p>Live preview of current selection</p>
+          </div>
+          <div class="panel-body">
+
+            <div class="summary-row">
+              <span class="summary-label">🌾 Rice · அரிசி</span>
+              <span class="summary-value zero" id="sumRice">— kg</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">🍬 Sugar · சர்க்கரை</span>
+              <span class="summary-value zero" id="sumSugar">— kg</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">🫙 Oil · எண்ணெய்</span>
+              <span class="summary-value zero" id="sumOil">— L</span>
+            </div>
+
+            <div class="summary-total-row">
+              <span class="summary-total-label">Total Qty</span>
+              <span class="summary-total-value" id="sumTotal">0.0 kg</span>
+            </div>
+
+            <button class="btn-generate" onclick="generateBill()" id="generateBtn2" style="margin-top:12px;">
+              🧾 Confirm & Generate
+            </button>
+
+          </div>
+        </div>
+
+        <div class="kural-card">
+          <div class="kural-tag">Kural · குறள் 101</div>
+          <p>உதவி வரைத்தன்று உதவி உதவி<br>செயப்பட்டார் சால்பின் வரைத்து</p>
+          <p class="kural-meaning">"The worth of a help is not measured by its size but by the greatness of the one who received it." — Kural 101</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ RECEIPT SECTION ═══════════════ -->
+<div id="receiptSection">
+  <div class="page-body">
+    <div class="receipt-wrap">
+
+      <div class="receipt-success-bar">
+        <div class="icon">✅</div>
+        <div>
+          <h3>Bill Generated Successfully · பட்டியல் வெற்றிகரமாக உருவாக்கப்பட்டது</h3>
+          <p>Transaction completed. Notification sent to beneficiary.</p>
+        </div>
+      </div>
+
+      <div class="receipt-body">
+
+        <div class="receipt-header-row">
+          <div class="receipt-shop">
+            <h4>⚡ Smart Ration Shop System</h4>
+            <p>தமிழ்நாடு அரசு · Government of Tamil Nadu</p>
+            <p>Public Distribution System · பொது விநியோக முறை</p>
+          </div>
+          <div class="receipt-bill-id">
+            <div class="bill-num" id="rcptBillId">BILL #—</div>
+            <p id="rcptDateTime">—</p>
+          </div>
+        </div>
+
+        <div class="receipt-member-row">
+          <div class="receipt-avatar" id="rcptAvatar">?</div>
+          <div class="receipt-member-info">
+            <h5 id="rcptName">—</h5>
+            <p id="rcptMeta">—</p>
+          </div>
+          <div style="margin-left:auto;">
+            <span style="background:#e8f5e9;border:1px solid #a5d6a7;color:#2e7d32;font-size:11px;padding:4px 10px;border-radius:2px;font-weight:500;">✓ Face Verified</span>
+          </div>
+        </div>
+
+        <table class="receipt-items-table">
+          <thead>
+            <tr>
+              <th>Item · பொருள்</th>
+              <th>Quantity · அளவு</th>
+              <th>Unit</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="rcptItemsBody"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2">Total Quantity · மொத்த அளவு</td>
+              <td id="rcptTotal" colspan="2">—</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="receipt-footer-row">
+          <div>
+            <div class="notif-status" id="rcptNotif">📧 Notification Sent</div>
+            <p style="font-size:11px;color:#999;margin-top:6px;">Card ID: <span id="rcptCardId">—</span></p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-print" onclick="window.print()">🖨 Print Receipt</button>
+            <button class="btn-new-txn" onclick="newTransaction()">+ New Transaction</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="site-footer">
+  <div class="tricolor"><span></span><span></span><span></span></div>
+  <p>© Government of Tamil Nadu · Smart PDS System · All Rights Reserved · Version 1.0</p>
+</div>
+
+<script>
+  const member = JSON.parse(sessionStorage.getItem('selected_member') || 'null');
+  if (!member) window.location.href = '/scan';
+
+  const cardId = sessionStorage.getItem('card_id') || '—';
+  const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+  // Fill member bar
+  document.getElementById('barAvatar').textContent = initials;
+  document.getElementById('barName').textContent = member.name;
+  document.getElementById('barMeta').textContent = 'ID #' + member.member_id + ' · ' + member.gender + ' · Age ' + member.age + ' · Card: ' + cardId;
+
+  const qty = { rice: 0, sugar: 0, oil: 0 };
+  const remaining = { rice: 5, sugar: 1, oil: 1 };
+  const fullQuota = { rice: 5, sugar: 1, oil: 1 };
+  const units = { rice: 'kg', sugar: 'kg', oil: 'L' };
+
+  // Load quota
+  async function loadQuota() {
+    try {
+      const res = await fetch('/api/quota/' + member.member_id);
+      const data = await res.json();
+      if (data.success) {
+        const q = data.remaining_quota;
+        remaining.rice = q.rice;
+        remaining.sugar = q.sugar;
+        remaining.oil = q.oil;
+        updateQuotaBars();
+      }
+    } catch(e) { console.error('Quota load failed', e); }
+
+    try {
+      const res2 = await fetch('/api/quota/full/' + member.member_id);
+      const data2 = await res2.json();
+      if (data2.success) {
+        const q = data2.quota;
+        fullQuota.rice = q.rice;
+        fullQuota.sugar = q.sugar;
+        fullQuota.oil = q.oil;
+        document.getElementById('riceQuota').textContent = q.rice + ' kg';
+        document.getElementById('sugarQuota').textContent = q.sugar + ' kg';
+        document.getElementById('oilQuota').textContent = q.oil + ' L';
+      }
+    } catch(e) {}
+  }
+
+  function updateQuotaBars() {
+    ['rice', 'sugar', 'oil'].forEach(item => {
+      const rem = remaining[item];
+      const full = fullQuota[item];
+      const pct = full > 0 ? Math.round((rem / full) * 100) : 0;
+      const bar = document.getElementById(item + 'Bar');
+      bar.style.width = pct + '%';
+      bar.className = 'quota-bar-fill' + (pct <= 25 ? ' over' : pct <= 50 ? ' warn' : '');
+      const unit = units[item];
+      document.getElementById(item + 'RemLabel').textContent = rem + ' ' + unit + ' left';
+    });
+  }
+
+  loadQuota();
+
+  function changeQty(item, delta) {
+    const newVal = Math.round((qty[item] + delta) * 10) / 10;
+    if (newVal < 0) return;
+    if (newVal > remaining[item]) {
+      alert('Only ' + remaining[item] + ' ' + units[item] + ' remaining for ' + item + ' this month!');
+      return;
+    }
+    qty[item] = newVal;
+    document.getElementById(item + 'Qty').textContent = newVal;
+    updateSummary();
+  }
+
+  function updateSummary() {
+    document.getElementById('sumRice').textContent = qty.rice > 0 ? qty.rice + ' kg' : '— kg';
+    document.getElementById('sumRice').className = 'summary-value' + (qty.rice > 0 ? '' : ' zero');
+    document.getElementById('sumSugar').textContent = qty.sugar > 0 ? qty.sugar + ' kg' : '— kg';
+    document.getElementById('sumSugar').className = 'summary-value' + (qty.sugar > 0 ? '' : ' zero');
+    document.getElementById('sumOil').textContent = qty.oil > 0 ? qty.oil + ' L' : '— L';
+    document.getElementById('sumOil').className = 'summary-value' + (qty.oil > 0 ? '' : ' zero');
+    const total = Math.round((qty.rice + qty.sugar + qty.oil) * 10) / 10;
+    document.getElementById('sumTotal').textContent = total + ' kg';
+  }
+
+  async function generateBill() {
+    const total = Math.round((qty.rice + qty.sugar + qty.oil) * 10) / 10;
+    if (total === 0) { alert('Please select at least one item before generating bill!'); return; }
+
+    const items = {};
+    if (qty.rice > 0) items.rice = qty.rice;
+    if (qty.sugar > 0) items.sugar = qty.sugar;
+    if (qty.oil > 0) items.oil = qty.oil;
+
+    const btn = document.getElementById('generateBtn');
+    const btn2 = document.getElementById('generateBtn2');
+    const statusMsg = document.getElementById('statusMsg');
+
+    btn.disabled = true; btn2.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,0.3);border-top-color:#fff;display:inline-block;width:16px;height:16px;border-width:2px;border-style:solid;border-radius:50%;animation:spin 0.8s linear infinite;"></div> &nbsp;Processing...';
+    statusMsg.className = 'status-msg loading';
+    statusMsg.innerHTML = '<div class="spinner"></div>&nbsp; Generating bill and saving transaction...';
+
+    try {
+      const res = await fetch('/api/bill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ member_id: member.member_id, items })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        statusMsg.className = 'status-msg success';
+        statusMsg.textContent = '✅ Bill #' + data.bill_id + ' generated successfully!';
+        setTimeout(() => showReceipt(data, items), 800);
+      } else {
+        statusMsg.className = 'status-msg error';
+        statusMsg.textContent = '❌ ' + (data.message || 'Billing failed.');
+        if (data.errors) statusMsg.textContent += ' ' + data.errors.join(' | ');
+        btn.disabled = false; btn2.disabled = false;
+        btn.innerHTML = '🧾 Generate Bill · பட்டியல் உருவாக்கு';
+      }
+    } catch(err) {
+      statusMsg.className = 'status-msg error';
+      statusMsg.textContent = '❌ Server error. Please check if Flask is running.';
+      btn.disabled = false; btn2.disabled = false;
+      btn.innerHTML = '🧾 Generate Bill · பட்டியல் உருவாக்கு';
+    }
+  }
+
+  function showReceipt(data, items) {
+    document.getElementById('billingSection').style.display = 'none';
+    document.getElementById('receiptSection').style.display = 'block';
+
+    document.getElementById('rcptBillId').textContent = 'BILL #' + String(data.bill_id).padStart(4, '0');
+    document.getElementById('rcptDateTime').textContent = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    document.getElementById('rcptAvatar').textContent = initials;
+    document.getElementById('rcptName').textContent = member.name;
+    document.getElementById('rcptMeta').textContent = 'ID #' + member.member_id + ' · ' + member.gender + ' · Age ' + member.age;
+    document.getElementById('rcptCardId').textContent = cardId;
+
+    // Build items rows
+    const tbody = document.getElementById('rcptItemsBody');
+    tbody.innerHTML = '';
+    const itemNames = { rice: 'Rice · அரிசி', sugar: 'Sugar · சர்க்கரை', oil: 'Oil · எண்ணெய்' };
+    Object.entries(items).forEach(([item, qty]) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${itemNames[item] || item}</td>
+        <td style="font-family:monospace;font-weight:600;color:#1a237e;">${qty}</td>
+        <td>${units[item]}</td>
+        <td><span style="background:#e8f5e9;border:1px solid #a5d6a7;color:#2e7d32;font-size:11px;padding:2px 8px;border-radius:2px;">✓ Issued</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('rcptTotal').textContent = data.total_quantity + ' kg';
+    document.getElementById('rcptNotif').textContent = member.email ? '📧 Email Sent to ' + member.email : '📱 SMS Notification Sent';
+
+    window.scrollTo(0, 0);
+  }
+
+  function newTransaction() {
+    sessionStorage.removeItem('selected_member');
+    sessionStorage.removeItem('members');
+    sessionStorage.removeItem('card_id');
+    window.location.href = '/scan';
+  }
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  }
+</script>
+</body>
+</html>
