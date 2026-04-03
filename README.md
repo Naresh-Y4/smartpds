@@ -99,12 +99,7 @@ ration_system/
 
 | Login | QR Scan | Face Verification | Billing |
 |------|--------|------------------|--------|
-| ![](<img width="1600" height="852" alt="Screenshot 2026-04-03 111911" src="https://github.com/user-attachments/assets/6af2879a-87b2-4a31-877f-67ca0e8ec4fa" />
-) | ![](<img width="1599" height="811" alt="Screenshot 2026-04-03 112351" src="https://github.com/user-attachments/assets/8a46f97f-607e-440c-96d4-c49c3ab4eab1" />
-) | ![](<img width="1600" height="852" alt="Screenshot 2026-04-03 112628" src="https://github.com/user-attachments/assets/bea22c23-d55f-4ddf-a52e-a2d7d1ad35a3" />
-) | ![](<img width="1600" height="852" alt="Screenshot 2026-04-03 112823" src="https://github.com/user-attachments/assets/3228e7f4-7175-4d7a-8609-dde4dc066e56" />
-) |
-
+| <img src="https://github.com/user-attachments/assets/6af2879a-87b2-4a31-877f-67ca0e8ec4fa" width="300"/> | <img src="https://github.com/user-attachments/assets/8a46f97f-607e-440c-96d4-c49c3ab4eab1" width="300"/> | <img src="https://github.com/user-attachments/assets/bea22c23-d55f-4ddf-a52e-a2d7d1ad35a3" width="300"/> | <img src="https://github.com/user-attachments/assets/3228e7f4-7175-4d7a-8609-dde4dc066e56" width="300"/> |
 ## ⚙️ Installation & Setup
 
 ### Prerequisites
